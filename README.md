@@ -5,10 +5,7 @@ This is the javascript code for Benjamin Forster's work Signatures, which was co
 ## To install on your own website:
 
 1. Upload the file `signatures.js` and the folder `/signatures_lores` to the base directory of your website.
-2. Include the following in the header of your websites html.
-```html
-<script type="text/javascript" src='/signatures.js'></script>
-```
+2. Include the following script tag in the header of your websites html. `<script type="text/javascript" src='/signatures.js'></script>`
 3. Its that easy.
 
 ## To run an illustrative version locally:
