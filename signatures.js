@@ -214,8 +214,8 @@
 	}
 
 	function was_disabled () {
-		//console.log(document.cookie.indexOf('signatures-disabled=true;'));
-		return (document.cookie.indexOf('signatures-disabled=true;')>=0);
+		//console.log(document.cookie.indexOf('signatures-disabled=true'));
+		return (document.cookie.indexOf('signatures-disabled=true')>=0);
 	}
 
 	function supports_canvas() {
