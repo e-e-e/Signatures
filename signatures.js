@@ -180,7 +180,7 @@
 		aggitation += Math.sqrt((px-rx)*(px-rx)+(py-ry)*(py-ry));
 		px = rx;
 		py = ry;
-		console.log(rx,ry);
+		//console.log(rx,ry);
 	}
 
 	function mouse_move(e) {
@@ -214,7 +214,7 @@
 	}
 
 	function was_disabled () {
-		console.log(document.cookie.indexOf('signatures-disabled=true;'));
+		//console.log(document.cookie.indexOf('signatures-disabled=true;'));
 		return (document.cookie.indexOf('signatures-disabled=true;')>=0);
 	}
 
