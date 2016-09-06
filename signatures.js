@@ -319,7 +319,6 @@
 		}
 	}
 
-
 	/*
 	 * Main Animation Functions 
 	 */
