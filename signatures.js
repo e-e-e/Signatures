@@ -252,7 +252,6 @@
 		canvas.style.left = 0;
 		canvas.style.right = 0;
 		canvas.style.pointerEvents = "none";
-		
 		canvas.style.opacity = 1;
 		canvas.style.transition = "opacity 1s";
 		set_css_width_height(canvas);
