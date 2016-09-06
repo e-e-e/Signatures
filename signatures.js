@@ -1,12 +1,27 @@
+/*\
+|*|	
+|*|	Signatures (Impakt.nl) 
+|*| Copyright 2016 Benjamin Forster
+|*|
+|*|
+|*|	This work is licensed under the Creative Commons 
+|*|	Attribution-NonCommercial-ShareAlike 4.0 International License. 
+|*|	To view a copy of this license, visit:
+|*|	
+|*|	http://creativecommons.org/licenses/by-nc-sa/4.0/.
+|*|
+|*|	Unless required by applicable law or agreed to in writing, software
+|*|	distributed under the License is distributed on an "AS IS" BASIS,
+|*|	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+|*|	See the License for the specific language governing permissions and
+|*|	limitations under the License.
+|*|
+\*/
+
 (function(options) {
 
 	"use strict";
-	
-	function load_signature(i) {
-		var img = new Image();
-		img.src = options.image_folder+'/signature-'+i+'.png';
-		img.onload = function() { signatures.push(img) ; };
-	}
+
 	/* 
 	 * START WHEN DOM HAS LOADED
 	 */
@@ -46,49 +61,11 @@
 	var px, py; //previous coordinates in relation to canvas
 	var aggitation = 0.0;
 	var last_moved = Date.now();
+	var last_timestamp = null;
 
-	function moved_recently() {
-		return (Date.now() - last_moved) < 120;
-	}
-
-	function update_agitate(e) {
-		last_moved = Date.now();
-		var bound = canvas.getBoundingClientRect();
-		rx = ((e.clientX - bound.left) / bound.width) * drawing_width;
-		ry = ((e.clientY - bound.top) / bound.height) * drawing_height;
-		if(!px) px = rx;
-		if(!py) py = ry;
-		aggitation += Math.sqrt((px-rx)*(px-rx)+(py-ry)*(py-ry));
-		px = rx;
-		py = ry;
-		console.log(rx,ry);
-	}
-
-	function mouse_move(e) {
-		update_agitate(e);
-	}
-
-	function touch_move(e) {
-		var touches = e.changedTouches;
-		for(var i=0; i<touches.length;i++) {
-			update_agitate(touches[i]);
-		}
-	}
-	
-	function resize() {
-		//update css to match window;
-		if(aspect_vertical !== is_aspect_veritcal()) set_css_width_height(canvas);
-		set_font_size();
-	}
-
-	function set_font_size(el) {
-		var title = el || document.getElementById('signatures');
-		if(window.innerWidth <= 768 || window.devicePixelRatio > 1 ) {
-			title.style.fontSize = '1.6em';
-		} else {
-			title.style.fontSize = '1em';
-		}
-	}
+	/*
+	 *	Signature Class Definition
+	 */
 
 	var Signature = function (image, timestamp, erasure) {
 		this.canvas = hidden_canvas;
@@ -168,6 +145,79 @@
 		return (this.progress >= 1);
 	};
 
+	/*
+	 *	Event functions
+	 */
+
+	function toggle_running(e) {
+		var link = document.getElementById('signatures-title');
+		var element = document.getElementById('signatures');
+		if(running) {
+			canvas.style.opacity = 0;
+			running = false;
+			link.style.textDecoration ="line-through";
+			element.title = "Click title to enable" ;
+			document.cookie = "signatures-disabled=true";
+		} else {
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			canvas.style.opacity = 1;
+			running = true;
+			link.style.textDecoration ="none";
+			element.title = "Click title to dismiss";
+			document.cookie = "signatures-disabled=false";
+		}
+		e.preventDefault();
+		return false;
+	}
+
+	function update_agitate(e) {
+		last_moved = Date.now();
+		var bound = canvas.getBoundingClientRect();
+		rx = ((e.clientX - bound.left) / bound.width) * drawing_width;
+		ry = ((e.clientY - bound.top) / bound.height) * drawing_height;
+		if(!px) px = rx;
+		if(!py) py = ry;
+		aggitation += Math.sqrt((px-rx)*(px-rx)+(py-ry)*(py-ry));
+		px = rx;
+		py = ry;
+		console.log(rx,ry);
+	}
+
+	function mouse_move(e) {
+		update_agitate(e);
+	}
+
+	function touch_move(e) {
+		var touches = e.changedTouches;
+		for(var i=0; i<touches.length;i++) {
+			update_agitate(touches[i]);
+		}
+	}
+	
+	function resize(e) {
+		//update css to match window;
+		if(aspect_vertical !== is_aspect_veritcal()) set_css_width_height(canvas);
+		set_font_size();
+	}
+
+	function moved_recently() {
+		return (Date.now() - last_moved) < 120;
+	}
+
+	function set_font_size(el) {
+		var title = el || document.getElementById('signatures');
+		if(window.innerWidth <= 768 || window.devicePixelRatio > 1 ) {
+			title.style.fontSize = '1.6em';
+		} else {
+			title.style.fontSize = '1em';
+		}
+	}
+
+	function was_disabled () {
+		console.log(document.cookie.indexOf('signatures-disabled=true;'));
+		return (document.cookie.indexOf('signatures-disabled=true;')>=0);
+	}
+
 	function supports_canvas() {
 		return !!document.createElement('canvas').getContext;
 	}
@@ -175,6 +225,7 @@
 	function is_aspect_veritcal() {
 		return window.innerWidth <= window.innerHeight;
 	}
+
 	function set_css_width_height(el) {
 		if(is_aspect_veritcal()) {
 			el.style.width = "80%";
@@ -249,6 +300,12 @@
 		div.addEventListener('click', toggle_running, false);
 	}
 
+	function load_signature(i) {
+		var img = new Image();
+		img.src = options.image_folder+'/signature-'+i+'.png';
+		img.onload = function() { signatures.push(img) ; };
+	}
+
 	function init() {
 		if(supports_canvas() && window.innerWidth) {
 			running = !was_disabled();
@@ -262,33 +319,10 @@
 		}
 	}
 
-	function was_disabled () {
-		console.log(document.cookie.indexOf('signatures-disabled=true;'));
-		return (document.cookie.indexOf('signatures-disabled=true;')>=0);
-	}
 
-	function toggle_running(e) {
-		var link = document.getElementById('signatures-title');
-		var element = document.getElementById('signatures');
-		if(running) {
-			canvas.style.opacity = 0;
-			running = false;
-			link.style.textDecoration ="line-through";
-			element.title = "Click title to enable" ;
-			document.cookie = "signatures-disabled=true";
-		} else {
-			context.clearRect(0, 0, canvas.width, canvas.height);
-			canvas.style.opacity = 1;
-			running = true;
-			link.style.textDecoration ="none";
-			element.title = "Click title to dismiss";
-			document.cookie = "signatures-disabled=false";
-		}
-		e.preventDefault();
-		return false;
-	}
-
-	var last_timestamp = null;
+	/*
+	 * Main Animation Functions 
+	 */
 
 	function loop(timestamp) {
 		if(!last_timestamp) last_timestamp=timestamp;
@@ -329,7 +363,6 @@
 			var min_y = ry - radius;
 			var max_x = rx + radius;
 			var max_y = ry + radius;
-			
 			if(min_x<0) min_x = 0;
 			else if(max_x>=drawing_width) max_x = drawing_width;
 			if(min_y<0) min_y = 0;
