@@ -152,22 +152,28 @@
 	function toggle_running(e) {
 		var link = document.getElementById('signatures-title');
 		var element = document.getElementById('signatures');
-		if(running) {
-			canvas.style.opacity = 0;
-			running = false;
-			link.style.textDecoration ="line-through";
-			element.title = "Click title to enable" ;
-			document.cookie = "signatures-disabled=true";
-		} else {
-			context.clearRect(0, 0, canvas.width, canvas.height);
-			canvas.style.opacity = 1;
-			running = true;
-			link.style.textDecoration ="none";
-			element.title = "Click title to dismiss";
-			document.cookie = "signatures-disabled=false";
+		if(e.target.id !== 'signatures-info') {
+			
+			if(running) {
+				canvas.style.opacity = 0;
+				running = false;
+				link.style.textDecoration ="line-through";
+				element.title = "Click title to enable" ;
+				document.cookie = "signatures-disabled=true";
+			} else {
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				canvas.style.opacity = 1;
+				running = true;
+				link.style.textDecoration ="none";
+				element.title = "Click title to dismiss";
+				document.cookie = "signatures-disabled=false";
+			}
+			var on_off = document.getElementById('signatures-on-off');
+			on_off.innerHTML = on_off_text();
+			e.preventDefault();
+			return false;
 		}
-		e.preventDefault();
-		return false;
+
 	}
 
 	function update_agitate(e) {
@@ -198,6 +204,7 @@
 		//update css to match window;
 		if(aspect_vertical !== is_aspect_veritcal()) set_css_width_height(canvas);
 		set_font_size();
+		set_info_floats();
 	}
 
 	function moved_recently() {
@@ -207,10 +214,27 @@
 	function set_font_size(el) {
 		var title = el || document.getElementById('signatures');
 		if(window.innerWidth <= 768 || window.devicePixelRatio > 1 ) {
-			title.style.fontSize = '1.6em';
+			title.style.fontSize = '1.3em';
 		} else {
 			title.style.fontSize = '1em';
 		}
+	}
+
+	function set_info_floats() {
+		var left = document.getElementById('signatures-left-float');
+		var right = document.getElementById('signatures-right-float');
+		if(left && right) {
+			console.log(left.getBoundingClientRect().top,right.getBoundingClientRect().top);
+			if (left.getBoundingClientRect().top === right.getBoundingClientRect().top){
+				left.style.float='left';
+			} else {
+				left.style.float='right';
+			}
+		}
+	}
+
+	function on_off_text() {
+		return (running) ? 'stop' : 'start';
 	}
 
 	function was_disabled () {
@@ -279,6 +303,7 @@
 		div.style.right=0;
 		div.style.cursor = "pointer";
 		div.style.width = "100%";
+		div.style.padding = '0.125em 0';
 		div.style.background = "rgba(255,255,255,0.8)";
 		div.style.borderTop = "medium black solid";
 		div.style.textAlign = "right";
@@ -286,16 +311,48 @@
 		div.style.fontWeight = 800;
 		div.title = (running) ? "Click title to dismiss" : "Click title to enable" ;
 		set_font_size(div);
-		var toggle = document.createElement('a');
-		toggle.id = 'signatures-title';
-		toggle.style.cursor = "pointer";
-		toggle.style.float = 'right';
-		toggle.style.padding = '0.2em 1em';
-		toggle.style.fontSize = '1em';
-		if(!running) toggle.style.textDecoration ="line-through";
-		toggle.innerHTML = "Benjamin Forster, <em>Signatures</em> (2016)";
-		div.appendChild(toggle);
+
+		var left = document.createElement('div');
+		left.id = 'signatures-left-float';
+		left.style.fontSize = '1em';
+		left.style.float = 'left';
+		left.style.padding = '0 1em';
+
+		var right = document.createElement('div');
+		right.id = 'signatures-right-float';
+		right.style.fontSize = '1em';
+		right.style.float = 'right';
+		right.style.padding = '0 1em';
+
+		var info = document.createElement('a');
+		info.id = 'signatures-info';
+		info.href = options.info_link;
+		info.innerHTML = options.link_text;
+
+		var title = document.createElement('a');
+		title.id = 'signatures-title';
+		title.style.cursor = "pointer";
+		title.style.margin = '0.2em 1em';
+		title.style.fontSize = '1em';
+		if(!running) title.style.textDecoration ="line-through";
+		title.innerHTML = "Benjamin Forster, <em>Signatures</em> (2016)";
+		title.style.margin = '0.2em 0';
+
+		var on_off = document.createElement('a');
+		on_off.id = 'signatures-on-off';
+		on_off.href = '#';
+		on_off.innerHTML = on_off_text();
+		on_off.style.padding = '0 1em';
+
+
+		left.appendChild(info);
+		left.appendChild(on_off);
+		right.appendChild(title);
+		div.appendChild(right);
+		div.appendChild(left);
+		
 		document.body.appendChild(div);
+		set_info_floats();
 		div.addEventListener('click', toggle_running, false);
 	}
 
@@ -382,6 +439,8 @@
 	}
 
 })({
-	image_folder: '/signatures_lores'
+	image_folder: '/signatures_lores',
+	info_link: 'http://impakt.nl/festival/signatures-by-benjamin-forster/',
+	link_text: 'about this artwork'
 });
 
