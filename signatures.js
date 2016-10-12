@@ -43,11 +43,14 @@
 	var canvas;
 	var hidden_context; 
 	var hidden_canvas; 
-
+	var window_height;
 	var step_rate = 1000/30.0;
+
 
 	var number_of_signatures = 502;
 	var signatures = [];
+
+	var scrolling = null;
 
 	// state variables
 
@@ -117,28 +120,33 @@
 		return !!document.createElement('canvas').getContext;
 	}
 
+	function setLocation() {
+		var val = (window_height + window.pageYOffset - canvas.offsetHeight) ;
+		canvas.style.transform = "translate3d(0, " + val + "px, 0)";
+		canvas.style.webkitTransform = "translate3d(0, " + val + "px, 0)";
+	}
+
 	function setup_canvases () {
+		window_height = window.innerHeight;
 
 		canvas = document.createElement('canvas');
 		canvas.width = signatures[0].width;
 		canvas.height = signatures[0].height;
-
 		canvas.style.display = "block";
-		canvas.style.position = "fixed";
 		canvas.style.margin = "auto";
-		canvas.style.position ="fixed";
+		canvas.style.position ="absolute";
 		canvas.style.zIndex = 99999999;
 		canvas.style.cursor = 'pointer';
-		canvas.style.bottom = '2em';
+		canvas.style.top = '-2em';
 		canvas.style.right = '2em';
 		canvas.style.opacity = 1;
-		canvas.style.transition = "opacity 1s";
+		canvas.style.transition = "opacity 0.2s ease";
 		canvas.style.width = signatures[0].width;
 		canvas.style.maxWidth = "40%";
 		canvas.style.height = "auto";
+		setTimeout(setLocation, 10);
 
 		canvas.addEventListener('click', function () {
-			console.log('this');
 			window.location.href = options.info_link;
 		});
 
@@ -162,14 +170,47 @@
 
 	function init() {
 		if(supports_canvas() && window.innerWidth) {
-			load_signature(Math.floor(Math.random()*number_of_signatures), start );
+
+			setTimeout( function() {
+				load_signature(Math.floor(Math.random()*number_of_signatures), start );
+			},500);
 		}
 	}
 
 	function start() {
 		running = true;
+		window.addEventListener('scroll', function() {
+			setLocation();
+			reset();
+		});
+
+		window.addEventListener('resize', function() {
+			window_height = window.innerHeight;
+			reset();
+			setLocation();
+		});
 		setup_canvases();
 		window.requestAnimationFrame(loop);
+	}
+
+	function reset () {
+		canvas.style.opacity = 0;
+		if(scrolling) {
+			clearTimeout(scrolling);
+		}
+		scrolling = setTimeout(function() {
+			canvas.style.opacity = 1;
+			sign = null;
+			running = true;
+			context.clearRect(0,0,canvas.width, canvas.height);
+			signatures = [];
+			load_signature(Math.floor(Math.random()*number_of_signatures), 
+				function() { 
+					setup_canvases();
+					window.requestAnimationFrame(loop);
+				});
+			
+		},100);
 	}
 
 	/*
