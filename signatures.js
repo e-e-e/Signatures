@@ -134,7 +134,7 @@
 		canvas.style.opacity = 1;
 		canvas.style.transition = "opacity 1s";
 		canvas.style.width = signatures[0].width;
-		canvas.style.maxWidth = "80%";
+		canvas.style.maxWidth = "40%";
 		canvas.style.height = "auto";
 
 		canvas.addEventListener('click', function () {
